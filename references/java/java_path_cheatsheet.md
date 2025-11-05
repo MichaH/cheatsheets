@@ -139,3 +139,65 @@ Path newFile = file.resolveSibling(nameWithoutExt + ".pdf");
 - **Lazy**: Keine Dateisystem-Zugriffe bei Path-Operationen
 - **Files-Klasse**: Für tatsächliche Dateisystem-Operationen verwenden
 - **Exception-Handling**: Viele Files-Methoden werfen IOException
+
+# Weiteres
+
+## Pfad als String oder andere Repräsentation ausgeben
+
+
+| Methode                       | Rückgabe | Beschreibung                                                         | Beispiel / Ergebnis                                                     |
+| ----------------------------- | -------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `toString()`                  | `String` | Gibt den Pfad in plattformtypischer Schreibweise zurück              | `Paths.get("/home/user/file.txt").toString()` → `"/home/user/file.txt"` |
+| `toAbsolutePath().toString()` | `String` | Absoluter Pfad als String                                            | `project/file.txt` → `"/home/user/project/file.txt"`                    |
+| `toRealPath()`                | `Path`   | Kanonischer Pfad mit aufgelösten Symlinks (wirft ggf. `IOException`) | `path.toRealPath()`                                                     |
+| `toUri()`                     | `URI`    | Wandelt Path in URI um (plattformunabhängig)                         | `Path.of("/home/user/file.txt").toUri()` → `file:///home/user/file.txt` |
+| `toFile()`                    | `File`   | Wandelt Path in `java.io.File`-Objekt um                             | `Path.of("/tmp/data.txt").toFile()`                                     |
+| `File.getPath()`              | `String` | Gibt Pfad des File-Objekts zurück                                    | `file.getPath()`                                                        |
+| `File.getAbsolutePath()`      | `String` | Absoluter Pfad als String                                            | `file.getAbsolutePath()`                                                |
+| `File.getCanonicalPath()`     | `String` | Echter Pfad mit aufgelösten Symlinks                                 | `file.getCanonicalPath()`                                               |
+| `path.toUri().getPath()`      | `String` | Extrahiert reinen Pfadanteil aus URI                                 | `file:///C:/data/test.txt` → `/C:/data/test.txt`                        |
+
+### Beispiel: Verschiedene String-Darstellungen eines Pfads
+
+~~~
+Path path = Paths.get("data", "test.txt");
+
+// Standarddarstellung
+System.out.println("toString():        " + path.toString());
+
+// Absoluter Pfad
+System.out.println("toAbsolutePath():  " + path.toAbsolutePath());
+
+// Kanonischer Pfad (existierende Datei vorausgesetzt)
+System.out.println("toRealPath():      " + path.toRealPath());
+
+// Umwandlung zu File
+File file = path.toFile();
+System.out.println("File:              " + file);
+System.out.println("File.getPath():    " + file.getPath());
+System.out.println("File.getAbsPath(): " + file.getAbsolutePath());
+
+// URI-Repräsentation
+System.out.println("toUri():           " + path.toUri());
+~~~
+
+### Beispielausgabe (Linux):
+
+~~~
+toString():        data/test.txt
+toAbsolutePath():  /home/user/project/data/test.txt
+toRealPath():      /home/user/project/data/test.txt
+File:              data/test.txt
+File.getPath():    data/test.txt
+File.getAbsPath(): /home/user/project/data/test.txt
+toUri():           file:///home/user/project/data/test.txt
+~~~
+
+#### Hinweise
+
+- toString() → rein textuelle Darstellung, ohne Prüfung auf Existenz  
+- toAbsolutePath() → nur rechnerisch, funktioniert auch bei nicht existierenden Dateien  
+- toRealPath() → prüft Existenz, löst Symlinks auf, kann IOException werfen  
+- toUri() → erzeugt plattformunabhängige URI, nützlich für Web- oder Netzwerkzugriffe  
+- toFile() → für Kompatibilität mit älteren java.io-APIs  
+
